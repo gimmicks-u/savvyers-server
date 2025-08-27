@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: savvyers-server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+#  jpa:
+#    hibernate:
+#      ddl-auto: update # for
+#    show-sql: true
+

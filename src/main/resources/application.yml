@@ -6,6 +6,10 @@ spring:
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
 #  jpa:
 #    hibernate:
 #      ddl-auto: update # for

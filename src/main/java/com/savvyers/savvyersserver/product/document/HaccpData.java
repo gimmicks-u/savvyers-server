@@ -1,5 +1,6 @@
 package com.savvyers.savvyersserver.product.document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class HaccpData {
     private Long id;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String allergy;
 
     @Field(type = FieldType.Text, index = false)
@@ -29,23 +31,29 @@ public class HaccpData {
     private String manufacture;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String prdkind;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String prdkindstate;
 
     @Field(type = FieldType.Text)
     private String prdlstNm;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String productGb;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String rawmtrl;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String reportNo;
 
     @Field(type = FieldType.Text)
+    @JsonIgnore
     private String rnum;
 }

@@ -38,7 +38,7 @@ public class HaccpData {
     @JsonIgnore
     private String prdkindstate;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, name = "prdlst_nm")
     private String prdlstNm;
 
     @Field(type = FieldType.Text)

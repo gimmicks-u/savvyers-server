@@ -20,7 +20,6 @@ public class ProductDocument {
 
     @Id
     @Field(type = FieldType.Long)
-    @JsonIgnore
     private Long id;
 
     @Field(type = FieldType.Keyword, name = "food_cd")

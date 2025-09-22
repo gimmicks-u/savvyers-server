@@ -9,13 +9,16 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-
+import org.springframework.data.elasticsearch.annotations.MultiField;
+import org.springframework.data.elasticsearch.annotations.InnerField;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(indexName = "products")
+@Setting(settingPath = "elasticsearch/products-settings.json")
 public class ProductDocument {
 
     @Id
@@ -26,7 +29,13 @@ public class ProductDocument {
     @JsonIgnore
     private String foodCd;
 
-    @Field(type = FieldType.Text, analyzer = "standard", name = "food_nm")
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, name = "food_nm", analyzer = "korean_nori", searchAnalyzer = "korean_nori"),
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "korean_ngram", searchAnalyzer = "korean_ngram"),
+                    @InnerField(suffix = "keyword", type = FieldType.Keyword)
+            }
+    )
     private String foodNm;
 
     @Field(type = FieldType.Text, name = "food_lv3_cd")
@@ -187,7 +196,13 @@ public class ProductDocument {
     @JsonIgnore
     private String cooNm;
 
-    @Field(type = FieldType.Text, name = "mfr_nm")
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, name = "mfr_nm", analyzer = "korean_nori", searchAnalyzer = "korean_nori"),
+            otherFields = {
+                    @InnerField(suffix = "ngram", type = FieldType.Text, analyzer = "korean_ngram", searchAnalyzer = "korean_ngram"),
+                    @InnerField(suffix = "keyword", type = FieldType.Keyword)
+            }
+    )
     private String mfrNm;
 
     @Field(type = FieldType.Text, name = "dist_nm")

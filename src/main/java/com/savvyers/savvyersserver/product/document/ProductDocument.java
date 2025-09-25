@@ -17,7 +17,7 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "products")
+@Document(indexName = "products_v3")
 @Setting(settingPath = "elasticsearch/products-settings.json")
 public class ProductDocument {
 

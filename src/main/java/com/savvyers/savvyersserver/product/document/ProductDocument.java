@@ -139,7 +139,6 @@ public class ProductDocument {
     private Float k;
 
     @Field(type = FieldType.Float)
-    @JsonIgnore
     private Float nat;
 
     @Field(type = FieldType.Float)
@@ -151,11 +150,9 @@ public class ProductDocument {
     private Float water;
 
     @Field(type = FieldType.Float)
-    @JsonIgnore
     private Float fasat;
 
     @Field(type = FieldType.Float)
-    @JsonIgnore
     private Float fatrn;
 
     @Field(type = FieldType.Float)
@@ -173,7 +170,6 @@ public class ProductDocument {
     private String servSize;
 
     @Field(type = FieldType.Text, name = "nut_con_srtr_qua")
-    @JsonIgnore
     private String nutConSrtrQua;
 
     @Field(type = FieldType.Text, name = "food_size")

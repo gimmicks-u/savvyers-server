@@ -16,14 +16,14 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping
-    public ResponseEntity<Page<ProductDocument>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDocument> products = productService.getAllProducts(pageable);
-        return ResponseEntity.ok(products);
-    }
+//    @GetMapping
+//    public ResponseEntity<Page<ProductDocument>> getAllProducts(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<ProductDocument> products = productService.getAllProducts(pageable);
+//        return ResponseEntity.ok(products);
+//    }
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDocument>> searchProducts(

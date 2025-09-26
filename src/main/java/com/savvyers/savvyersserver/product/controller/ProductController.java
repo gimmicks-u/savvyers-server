@@ -30,6 +30,10 @@ public class ProductController {
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        int maxPageSize = 24;
+        if (size > maxPageSize) {
+            size = maxPageSize;
+        }
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductDocument> products = productService.searchProducts(keyword, pageable);
         return ResponseEntity.ok(products);

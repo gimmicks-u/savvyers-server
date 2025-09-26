@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  savvyers-server-dev:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: savvyers-server-dev
+    ports:
+      - 5001:8080
+    env_file:
+      - .env
+    environment:
+      - MYSQL_URL=${MYSQL_URL}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST}
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD}
+    networks:
+      - default
+    restart: unless-stopped

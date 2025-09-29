@@ -1,11 +1,15 @@
 spring:
   application:
     name: savvyers-server
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  # datasource:
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+  #   url: ${MYSQL_URL}
+  #   username: ${MYSQL_USERNAME}
+  #   password: ${MYSQL_PASSWORD}
   elasticsearch:
     uris: ${ELASTICSEARCH_HOST}
     username: ${ELASTICSEARCH_USERNAME}

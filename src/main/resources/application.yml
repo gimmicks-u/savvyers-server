@@ -18,4 +18,6 @@ spring:
 #    hibernate:
 #      ddl-auto: update # for
 #    show-sql: true
+cors:
+  allowed-origins: https://savvyers.net,http://savvyers.net,http://localhost:3000
 

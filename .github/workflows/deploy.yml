@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: './savvyers-server-dev-image.tar'
-          target: '/home/kim/apps/savvyers/deploy/dev'
+          target: '/home/kim/apps/savvyers/deploy/dev/server'
 
       - name: Create/Update env file on server (from secrets)
         uses: appleboy/ssh-action@v1.0.3
@@ -72,7 +72,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
           script: |
-            mkdir -p /home/kim/apps/savvyers/deploy/dev/env
+            mkdir -p /home/kim/apps/savvyers/deploy/dev/server/env
             cat > /home/kim/apps/savvyers/deploy/dev/env/.env.dev << 'EOF'
             ${{ secrets.ENV_DEV }}
             EOF
@@ -87,8 +87,8 @@ jobs:
           script_stop: true
           script: |
             set -e
-            mkdir -p /home/kim/apps/savvyers/deploy/dev
-            cd /home/kim/apps/savvyers/deploy/dev
+            mkdir -p /home/kim/apps/savvyers/deploy/dev/server
+            cd /home/kim/apps/savvyers/deploy/dev/server
             docker rm -f savvyers-server-dev || true
             docker load -i savvyers-server-dev-image.tar
             rm -f savvyers-server-dev-image.tar
@@ -96,5 +96,5 @@ jobs:
             docker run -d --name savvyers-server-dev --restart unless-stopped \
               -p 5101:8080 \
               --network shared-elastic \
-              --env-file /home/kim/apps/savvyers/deploy/dev/env/.env.dev \
+              --env-file /home/kim/apps/savvyers/deploy/dev/server/env/.env.dev \
               "${{ steps.meta.outputs.tag }}"

@@ -47,6 +47,12 @@ jobs:
         run: |
           docker save -o savvyers-server-dev-image.tar "${{ steps.meta.outputs.tag }}"
 
+      - name: Ensure tarball is readable
+        run: |
+          ls -l savvyers-server-dev-image.tar || true
+          chmod 644 savvyers-server-dev-image.tar
+          ls -l savvyers-server-dev-image.tar
+
       - name: Upload image tarball to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -54,7 +60,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: 'savvyers-server-dev-image.tar'
+          source: './savvyers-server-dev-image.tar'
           target: '/home/kim/apps/savvyers/deploy/dev'
 
       #   - name: Create/Update env file on server (from secrets)

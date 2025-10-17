@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/docker-for-cicd
+  workflow_dispatch:
 
 concurrency:
   group: deploy-dev

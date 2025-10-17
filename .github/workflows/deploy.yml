@@ -3,7 +3,7 @@ name: Deploy Dev (Docker)
 on:
   push:
     branches:
-      - feature//docker-for-cicd
+      - feature/docker-for-cicd
 
 concurrency:
   group: deploy-dev

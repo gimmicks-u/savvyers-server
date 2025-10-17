@@ -10,10 +10,6 @@ services:
       - 5101:8080
     env_file:
       - ../../env/.env.dev
-    environment:
-      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST}
-      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME}
-      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD}
     networks:
       - default
       - shared-elastic

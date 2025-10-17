@@ -63,18 +63,18 @@ jobs:
           source: './savvyers-server-dev-image.tar'
           target: '/home/kim/apps/savvyers/deploy/dev'
 
-      #   - name: Create/Update env file on server (from secrets)
-      #     uses: appleboy/ssh-action@v1.0.3
-      #     with:
-      #       host: ${{ secrets.SSH_HOST }}
-      #       username: ${{ secrets.SSH_USERNAME }}
-      #       key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #       script_stop: true
-      #       script: |
-      #         mkdir -p /home/kim/apps/savvyers/deploy/dev/env
-      #         cat > /home/kim/apps/savvyers/deploy/dev/env/.env.dev << 'EOF'
-      #         ${{ secrets.ENV_DEV }}
-      #         EOF
+      - name: Create/Update env file on server (from secrets)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            mkdir -p /home/kim/apps/savvyers/deploy/dev/env
+            cat > /home/kim/apps/savvyers/deploy/dev/env/.env.dev << 'EOF'
+            ${{ secrets.ENV_DEV }}
+            EOF
 
       - name: Deploy container on server
         uses: appleboy/ssh-action@v1.0.3

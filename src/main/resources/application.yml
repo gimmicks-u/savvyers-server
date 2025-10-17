@@ -21,3 +21,8 @@ spring:
 cors:
   allowed-origins: https://savvyers.net,http://savvyers.net,http://localhost:3000
 
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false} # 기본값 false, 환경변수로 제어
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}

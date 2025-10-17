@@ -1,0 +1,100 @@
+name: Deploy Dev (Docker)
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Prepare env file for build (from secrets)
+        run: |
+          mkdir -p env
+          cat << 'EOF' > env/.env.dev
+          ${{ secrets.ENV_DEV }}
+          EOF
+
+      - name: Build Docker image via compose (no cache)
+        run: |
+          docker compose -f docker/dev/docker-compose.yml build --no-cache
+
+      - name: Derive built image and tag
+        id: meta
+        run: |
+          IMAGE=$(docker compose -f docker/dev/docker-compose.yml config --images | tail -n 1)
+          TAG="savvyers/savvyers-server-dev:${GITHUB_SHA}"
+          LATEST="savvyers/savvyers-server-dev:latest"
+          docker tag "$IMAGE" "$TAG"
+          docker tag "$IMAGE" "$LATEST"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Save image to tarball
+        run: |
+          docker save -o savvyers-server-dev-image.tar "${{ steps.meta.outputs.tag }}"
+
+      - name: Ensure tarball is readable
+        run: |
+          ls -l savvyers-server-dev-image.tar || true
+          chmod 644 savvyers-server-dev-image.tar
+          ls -l savvyers-server-dev-image.tar
+
+      - name: Upload image tarball to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: './savvyers-server-dev-image.tar'
+          target: '/home/kim/apps/savvyers/deploy/dev'
+
+      - name: Create/Update env file on server (from secrets)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            mkdir -p /home/kim/apps/savvyers/deploy/dev/env
+            cat > /home/kim/apps/savvyers/deploy/dev/env/.env.dev << 'EOF'
+            ${{ secrets.ENV_DEV }}
+            EOF
+
+      - name: Deploy container on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            mkdir -p /home/kim/apps/savvyers/deploy/dev
+            cd /home/kim/apps/savvyers/deploy/dev
+            docker rm -f savvyers-server-dev || true
+            docker load -i savvyers-server-dev-image.tar
+            rm -f savvyers-server-dev-image.tar
+            docker network inspect shared-elastic >/dev/null 2>&1 || docker network create shared-elastic
+            docker run -d --name savvyers-server-dev --restart unless-stopped \
+              -p 5101:8080 \
+              --network shared-elastic \
+              --env-file /home/kim/apps/savvyers/deploy/dev/env/.env.dev \
+              "${{ steps.meta.outputs.tag }}"

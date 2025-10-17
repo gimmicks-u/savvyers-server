@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  savvyers-server-local:
+    build:
+      context: ../../
+      dockerfile: docker/local/dockerfile
+    container_name: savvyers-server-local
+    ports:
+      - 8080:8080
+    env_file:
+      - ../../env/.env.local
+    networks:
+      - default
+    restart: unless-stopped

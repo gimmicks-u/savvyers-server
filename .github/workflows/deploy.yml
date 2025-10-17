@@ -73,7 +73,7 @@ jobs:
           script_stop: true
           script: |
             mkdir -p /home/kim/apps/savvyers/deploy/dev/server/env
-            cat > /home/kim/apps/savvyers/deploy/dev/env/.env.dev << 'EOF'
+            cat > /home/kim/apps/savvyers/deploy/dev/server/env/.env.dev << 'EOF'
             ${{ secrets.ENV_DEV }}
             EOF
 

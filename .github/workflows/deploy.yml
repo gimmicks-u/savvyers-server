@@ -3,7 +3,7 @@ name: Deploy Dev (Docker)
 on:
   push:
     branches:
-      - feature/ready-to-main
+      - dev
   workflow_dispatch:
 
 concurrency:

@@ -3,7 +3,7 @@ name: Deploy Dev (Docker)
 on:
   push:
     branches:
-      - dev
+      - feature/ready-to-main
   workflow_dispatch:
 
 concurrency:
@@ -124,3 +124,24 @@ jobs:
               --network shared-elastic \
               --env-file /home/kim/apps/savvyers/deploy/dev/server/env/.env.dev \
               "${{ steps.meta.outputs.tag }}"
+            
+            ###
+            ### HEALTH CHECK
+            ###
+            
+            echo "Waiting for application to start..."
+            MAX_RETRIES=30
+            RETRY_INTERVAL=2
+
+            for i in $(seq 1 $MAX_RETRIES); do
+              if curl -sf http://localhost:5101/health > /dev/null 2>&1; then
+                echo "Health check passed! Application is running."
+                exit 0
+              fi
+              echo "Attempt $i/$MAX_RETRIES: Application is not ready yet"
+              sleep $RETRY_INTERVAL
+            done
+
+            echo "Health check failed after $MAX_RETRIES attempts"
+            docker logs savvyers-server-dev --tail 50
+            exit 1

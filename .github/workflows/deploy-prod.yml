@@ -145,7 +145,7 @@ jobs:
             IS_GREEN_RUNNING=$(docker ps -q -f "name=${{ env.GREEN_CONTAINER }}" || true)
             
             echo "$IS_BLUE_RUNNING"
-            echo "IS_GREEN_RUNNING"
+            echo "$IS_GREEN_RUNNING"
             
             if [ -n "$IS_BLUE_RUNNING" ]; then
               echo "1"

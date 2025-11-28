@@ -16,7 +16,6 @@ env:
   GREEN_CONTAINER: savvyers-server-prod-green
   BLUE_PORT: 5201
   GREEN_PORT: 5202
-  NGINX_PORT: 5200
 
 jobs:
   # TODO: Release it after test
@@ -142,10 +141,6 @@ jobs:
             echo "[STEP 3/7] Determining deploy target..."
             echo "=========================================="
             IS_BLUE_RUNNING=$(docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" || true)
-            IS_GREEN_RUNNING=$(docker ps -q -f "name=${{ env.GREEN_CONTAINER }}" || true)
-            
-            echo "$IS_BLUE_RUNNING"
-            echo "$IS_GREEN_RUNNING"
             
             if [ -n "$IS_BLUE_RUNNING" ]; then
               echo "1"
@@ -162,8 +157,6 @@ jobs:
             fi
             echo "3"
 
-            echo "Blue running: ${IS_BLUE_RUNNING:-no}"
-            echo "Green running: ${IS_GREEN_RUNNING:-no}"
             echo "→ Deploy target: $DEPLOY_TARGET (port $DEPLOY_PORT)"
             echo "✓ Target determined"
 
@@ -238,7 +231,7 @@ jobs:
             echo "✓ Nginx reloaded"
 
             sleep 2
-            if curl -sf http://localhost:${{ env.NGINX_PORT }}/health > /dev/null 2>&1; then
+            if curl -sf https://api.savvyers.net/health > /dev/null 2>&1; then
               echo "✓ Traffic switched successfully!"
             else
               echo "⚠ Warning: Nginx health check failed"
@@ -248,5 +241,4 @@ jobs:
             echo "=========================================="
             echo "✓ DEPLOYMENT COMPLETED!"
             echo "  Active: $DEPLOY_TARGET"
-            echo "  Port: ${{ env.NGINX_PORT }}"
             echo "=========================================="

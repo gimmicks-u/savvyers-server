@@ -141,19 +141,22 @@ jobs:
             echo "[STEP 3/7] Determining deploy target..."
             echo "=========================================="
 
-            # Check if blue container is running
-            IS_BLUE=$(docker ps | grep savvyers-server-prod-blue)
+            # Default: deploy to Blue
+            DEPLOY_TARGET="blue"
+            DEPLOY_CONTAINER="${{ env.BLUE_CONTAINER }}"
+            DEPLOY_PORT="${{ env.BLUE_PORT }}"
 
-            if [ -n "$IS_BLUE" ]; then
+            # Check if blue container is running, if so deploy to Green
+            IS_BLUE=$(docker ps | grep savvyers-server-prod-blue || true)
+            echo "IS_BLUE: [$IS_BLUE]"
+
+            if [ "$IS_BLUE" != "" ]; then
               echo "Blue is running → deploying to Green"
               DEPLOY_TARGET="green"
               DEPLOY_CONTAINER="${{ env.GREEN_CONTAINER }}"
               DEPLOY_PORT="${{ env.GREEN_PORT }}"
             else
               echo "Blue is not running → deploying to Blue"
-              DEPLOY_TARGET="blue"
-              DEPLOY_CONTAINER="${{ env.BLUE_CONTAINER }}"
-              DEPLOY_PORT="${{ env.BLUE_PORT }}"
             fi
 
             echo "→ Deploy target: $DEPLOY_TARGET (port $DEPLOY_PORT)"

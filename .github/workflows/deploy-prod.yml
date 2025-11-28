@@ -1,0 +1,234 @@
+name: Deploy Prod (Blue/Green)
+
+on:
+  push:
+    branches:
+      - feature/ready-to-main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  DEPLOY_PATH: /home/kim/apps/savvyers/deploy/prod/server
+  BLUE_CONTAINER: savvyers-server-prod-blue
+  GREEN_CONTAINER: savvyers-server-prod-green
+  BLUE_PORT: 5201
+  GREEN_PORT: 5202
+  NGINX_PORT: 5200
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/reports/tests/test/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Prepare env file for build (from secrets)
+        run: |
+          mkdir -p env
+          cat << 'EOF' > env/.env.prod
+          ${{ secrets.ENV_PROD }}
+          EOF
+
+      - name: Build Docker image via compose (no cache)
+        run: |
+          docker compose -f docker/prod/docker-compose.yml build --no-cache savvyers-server-prod
+
+      - name: Derive built image and tag
+        id: meta
+        run: |
+          IMAGE=$(docker compose -f docker/prod/docker-compose.yml config --images | head -n 1)
+          TAG="savvyers/savvyers-server-prod:${GITHUB_SHA}"
+          LATEST="savvyers/savvyers-server-prod:latest"
+          docker tag "$IMAGE" "$TAG"
+          docker tag "$IMAGE" "$LATEST"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Save image to tarball
+        run: |
+          docker save -o savvyers-server-prod-image.tar "${{ steps.meta.outputs.tag }}"
+
+      - name: Ensure tarball is readable
+        run: |
+          ls -l savvyers-server-prod-image.tar || true
+          chmod 644 savvyers-server-prod-image.tar
+          ls -l savvyers-server-prod-image.tar
+
+      - name: Upload image tarball to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: './savvyers-server-prod-image.tar'
+          target: '${{ env.DEPLOY_PATH }}'
+
+      - name: Upload nginx config files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: './docker/prod/nginx/*'
+          target: '${{ env.DEPLOY_PATH }}/nginx'
+          strip_components: 3
+
+      - name: Create/Update env file on server (from secrets)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            mkdir -p ${{ env.DEPLOY_PATH }}/env
+            cat > ${{ env.DEPLOY_PATH }}/env/.env.prod << 'EOF'
+            ${{ secrets.ENV_PROD }}
+            EOF
+
+      - name: Blue/Green Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ env.DEPLOY_PATH }}
+
+            ###
+            ### LOAD NEW IMAGE
+            ###
+            docker load -i savvyers-server-prod-image.tar
+            rm -f savvyers-server-prod-image.tar
+
+            ###
+            ### DETERMINE ACTIVE/INACTIVE SERVER (by docker ps)
+            ###
+            IS_BLUE_RUNNING=$(docker ps --format '{{.Names}}' | grep -w "${{ env.BLUE_CONTAINER }}" || true)
+            IS_GREEN_RUNNING=$(docker ps --format '{{.Names}}' | grep -w "${{ env.GREEN_CONTAINER }}" || true)
+
+            if [ -n "$IS_BLUE_RUNNING" ]; then
+              # Blue is running → deploy to Green
+              ACTIVE_SERVER="blue"
+              DEPLOY_TARGET="green"
+              DEPLOY_CONTAINER="${{ env.GREEN_CONTAINER }}"
+              DEPLOY_PORT="${{ env.GREEN_PORT }}"
+            else
+              # Blue is not running (or first deploy) → deploy to Blue
+              ACTIVE_SERVER="green"
+              DEPLOY_TARGET="blue"
+              DEPLOY_CONTAINER="${{ env.BLUE_CONTAINER }}"
+              DEPLOY_PORT="${{ env.BLUE_PORT }}"
+            fi
+
+            echo "Blue running: ${IS_BLUE_RUNNING:-no}"
+            echo "Green running: ${IS_GREEN_RUNNING:-no}"
+            echo "Deploying to: $DEPLOY_TARGET (port $DEPLOY_PORT)"
+
+            ###
+            ### SETUP NETWORK
+            ###
+            docker network inspect shared-elastic >/dev/null 2>&1 || docker network create shared-elastic
+
+            ###
+            ### DEPLOY TO INACTIVE SERVER
+            ###
+            docker rm -f "$DEPLOY_CONTAINER" || true
+            docker run -d --name "$DEPLOY_CONTAINER" --restart unless-stopped \
+              -p "$DEPLOY_PORT":8080 \
+              --network shared-elastic \
+              --env-file ${{ env.DEPLOY_PATH }}/env/.env.prod \
+              "${{ steps.meta.outputs.tag }}"
+
+            ###
+            ### HEALTH CHECK ON NEW CONTAINER
+            ###
+            echo "Waiting for $DEPLOY_TARGET to be healthy..."
+            MAX_RETRIES=30
+            RETRY_INTERVAL=2
+            HEALTH_OK=false
+
+            for i in $(seq 1 $MAX_RETRIES); do
+              if curl -sf http://localhost:$DEPLOY_PORT/health > /dev/null 2>&1; then
+                echo "Health check passed for $DEPLOY_TARGET!"
+                HEALTH_OK=true
+                break
+              fi
+              echo "Attempt $i/$MAX_RETRIES: $DEPLOY_TARGET is not ready yet"
+              sleep $RETRY_INTERVAL
+            done
+
+            if [ "$HEALTH_OK" = false ]; then
+              echo "Health check failed for $DEPLOY_TARGET"
+              docker logs "$DEPLOY_CONTAINER" --tail 50
+              docker rm -f "$DEPLOY_CONTAINER" || true
+              exit 1
+            fi
+
+            ###
+            ### SWITCH NGINX UPSTREAM
+            ###
+            echo "Switching traffic to $DEPLOY_TARGET..."
+            sudo cp ${{ env.DEPLOY_PATH }}/nginx/upstream-$DEPLOY_TARGET.conf /etc/nginx/conf.d/savvyers-upstream.conf
+
+            # Test nginx config before reload
+            sudo nginx -t
+
+            # Reload nginx to apply new upstream
+            sudo systemctl reload nginx
+
+            ###
+            ### VERIFY TRAFFIC SWITCH
+            ###
+            sleep 2
+            if curl -sf http://localhost:${{ env.NGINX_PORT }}/health > /dev/null 2>&1; then
+              echo "Traffic successfully switched to $DEPLOY_TARGET!"
+            else
+              echo "Warning: Nginx health check failed, but deployment may still be successful"
+            fi
+
+            echo ""
+            echo "=========================================="
+            echo "Deployment completed successfully!"
+            echo "Active server: $DEPLOY_TARGET"
+            echo "Nginx port: ${{ env.NGINX_PORT }}"
+            echo "=========================================="

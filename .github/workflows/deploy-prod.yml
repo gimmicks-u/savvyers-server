@@ -142,7 +142,9 @@ jobs:
             echo "=========================================="
 
             # Check if blue container is running
-            if docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" | grep -q .; then
+            IS_BLUE=$(docker ps | grep savvyers-server-prod-blue)
+
+            if [ -n "$IS_BLUE" ]; then
               echo "Blue is running → deploying to Green"
               DEPLOY_TARGET="green"
               DEPLOY_CONTAINER="${{ env.GREEN_CONTAINER }}"

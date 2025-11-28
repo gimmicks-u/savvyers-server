@@ -141,7 +141,9 @@ jobs:
             echo "[STEP 3/7] Determining deploy target..."
             echo "=========================================="
             IS_BLUE_RUNNING=$(docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" || true)
-            
+            echo "IS_BLUE_RUNNING: $IS_BLUE_RUNNING"
+            echo "$IS_BLUE_RUNNING"
+
             if [ -n "$IS_BLUE_RUNNING" ]; then
               echo "1"
               ACTIVE_SERVER="blue"

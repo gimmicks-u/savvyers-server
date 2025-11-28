@@ -140,24 +140,20 @@ jobs:
             echo "=========================================="
             echo "[STEP 3/7] Determining deploy target..."
             echo "=========================================="
-            IS_BLUE_RUNNING=$(docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" || true)
-            echo "IS_BLUE_RUNNING: $IS_BLUE_RUNNING"
-            echo "$IS_BLUE_RUNNING"
+            IS_BLUE_RUNNING=$(docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" || echo "")
+            echo "IS_BLUE_RUNNING: [$IS_BLUE_RUNNING]"
 
             if [ -n "$IS_BLUE_RUNNING" ]; then
-              echo "1"
               ACTIVE_SERVER="blue"
               DEPLOY_TARGET="green"
               DEPLOY_CONTAINER="${{ env.GREEN_CONTAINER }}"
               DEPLOY_PORT="${{ env.GREEN_PORT }}"
             else
-            echo "2"
               ACTIVE_SERVER="green"
               DEPLOY_TARGET="blue"
               DEPLOY_CONTAINER="${{ env.BLUE_CONTAINER }}"
               DEPLOY_PORT="${{ env.BLUE_PORT }}"
             fi
-            echo "3"
 
             echo "→ Deploy target: $DEPLOY_TARGET (port $DEPLOY_PORT)"
             echo "✓ Target determined"

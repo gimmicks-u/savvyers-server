@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  savvyers-server-blue:
+  savvyers-server-prod:
     build:
       context: ../../
       dockerfile: docker/prod/dockerfile

@@ -98,17 +98,6 @@ jobs:
           source: './savvyers-server-prod-image.tar'
           target: '${{ env.DEPLOY_PATH }}'
 
-      - name: Upload nginx config files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: './docker/prod/nginx/*'
-          target: '${{ env.DEPLOY_PATH }}/nginx'
-          strip_components: 3
-
       - name: Create/Update env file on server (from secrets)
         uses: appleboy/ssh-action@v1.0.3
         with:

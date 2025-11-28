@@ -154,18 +154,24 @@ jobs:
             echo "=========================================="
             IS_BLUE_RUNNING=$(docker ps -q -f "name=${{ env.BLUE_CONTAINER }}" || true)
             IS_GREEN_RUNNING=$(docker ps -q -f "name=${{ env.GREEN_CONTAINER }}" || true)
-
+            
+            echo "$IS_BLUE_RUNNING"
+            echo "IS_GREEN_RUNNING"
+            
             if [ -n "$IS_BLUE_RUNNING" ]; then
+              echo "1"
               ACTIVE_SERVER="blue"
               DEPLOY_TARGET="green"
               DEPLOY_CONTAINER="${{ env.GREEN_CONTAINER }}"
               DEPLOY_PORT="${{ env.GREEN_PORT }}"
             else
+            echo "2"
               ACTIVE_SERVER="green"
               DEPLOY_TARGET="blue"
               DEPLOY_CONTAINER="${{ env.BLUE_CONTAINER }}"
               DEPLOY_PORT="${{ env.BLUE_PORT }}"
             fi
+            echo "3"
 
             echo "Blue running: ${IS_BLUE_RUNNING:-no}"
             echo "Green running: ${IS_GREEN_RUNNING:-no}"

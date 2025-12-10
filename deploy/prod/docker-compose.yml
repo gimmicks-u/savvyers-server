@@ -4,4 +4,4 @@ services:
   savvyers-server-prod:
     build:
       context: ../../
-      dockerfile: docker/prod/dockerfile
+      dockerfile: deploy/prod/dockerfile

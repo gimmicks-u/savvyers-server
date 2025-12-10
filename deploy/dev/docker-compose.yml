@@ -4,7 +4,7 @@ services:
   savvyers-server-dev:
     build:
       context: ../../
-      dockerfile: docker/dev/dockerfile
+      dockerfile: deploy/dev/dockerfile
     container_name: savvyers-server-dev
     ports:
       - 5101:8080

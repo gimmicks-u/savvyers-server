@@ -60,7 +60,7 @@ jobs:
           base: ${{ github.event.before }}
           filters: |
             deploy-script:
-              - 'docker/prod/deploy-prod.sh'
+              - 'deploy/prod/deploy-prod.sh'
 
       - name: Verify Docker versions
         run: |
@@ -69,12 +69,12 @@ jobs:
 
       - name: Build Docker image via compose (no cache)
         run: |
-          docker compose -f docker/prod/docker-compose.yml build --no-cache savvyers-server-prod
+          docker compose -f deploy/prod/docker-compose.yml build --no-cache savvyers-server-prod
 
       - name: Derive built image and tag
         id: meta
         run: |
-          IMAGE=$(docker compose -f docker/prod/docker-compose.yml config --images | head -n 1)
+          IMAGE=$(docker compose -f deploy/prod/docker-compose.yml config --images | head -n 1)
           TAG="savvyers/savvyers-server-prod:${GITHUB_SHA}"
           LATEST="savvyers/savvyers-server-prod:latest"
           docker tag "$IMAGE" "$TAG"
@@ -109,7 +109,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: './docker/prod/deploy-prod.sh'
+          source: './deploy/prod/deploy-prod.sh'
           target: '${{ env.DEPLOY_PATH }}'
           strip_components: 2
 

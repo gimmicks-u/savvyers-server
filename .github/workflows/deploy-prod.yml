@@ -107,9 +107,7 @@ jobs:
           script_stop: true
           script: |
             mkdir -p ${{ env.DEPLOY_PATH }}/env
-            cat > ${{ env.DEPLOY_PATH }}/env/.env.prod << 'EOF'
-            ${{ secrets.ENV_PROD }}
-            EOF
+            echo "${{ secrets.ENV_PROD }}" > ${{ env.DEPLOY_PATH }}/env/.env.prod
             echo "✓ Env file created/updated"
 
             echo "=========================================="

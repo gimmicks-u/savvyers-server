@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: savvyers-server
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  # datasource:
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+  #   url: ${MYSQL_URL}
+  #   username: ${MYSQL_USERNAME}
+  #   password: ${MYSQL_PASSWORD}
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+#  jpa:
+#    hibernate:
+#      ddl-auto: update # for
+#    show-sql: true
+cors:
+  allowed-origins: https://savvyers.net,http://savvyers.net,http://localhost:3000
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false} # 기본값 false, 환경변수로 제어
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}

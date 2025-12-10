@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  savvyers-server-prod:
+    build:
+      context: ../../
+      dockerfile: deploy/prod/dockerfile

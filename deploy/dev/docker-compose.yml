@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  savvyers-server-dev:
+    build:
+      context: ../../
+      dockerfile: deploy/dev/dockerfile
+    container_name: savvyers-server-dev
+    ports:
+      - 5101:8080
+    env_file:
+      - ../../env/.env.dev
+    networks:
+      - default
+      - shared-elastic
+    restart: unless-stopped
+
+networks:
+  shared-elastic:
+    external: true
+    name: shared-elastic # 기존 네트워크 참조

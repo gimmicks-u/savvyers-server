@@ -16,8 +16,6 @@ BLUE_CONTAINER="savvyers-server-prod-blue"
 GREEN_CONTAINER="savvyers-server-prod-green"
 BLUE_PORT="5201"
 GREEN_PORT="5202"
-IMAGE_TAG="savvyers/savvyers-server-prod:e354ca43102348eb40ee8329914e8f29af9c52fc"
-
 
 cd $DEPLOY_PATH
 

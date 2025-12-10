@@ -20,21 +20,21 @@ GREEN_PORT="5202"
 cd $DEPLOY_PATH
 
 echo "=========================================="
-echo "[STEP 1/7] Loading Docker image..."
+echo "[STEP 1/8] Loading Docker image..."
 echo "=========================================="
 docker load -i savvyers-server-prod-image.tar
 echo "✓ Image loaded successfully"
 
 echo ""
 echo "=========================================="
-echo "[STEP 2/7] Cleaning up tarball..."
+echo "[STEP 2/8] Cleaning up tarball..."
 echo "=========================================="
 rm -f savvyers-server-prod-image.tar
 echo "✓ Tarball removed"
 
 echo ""
 echo "=========================================="
-echo "[STEP 3/7] Determining deploy target..."
+echo "[STEP 3/8] Determining deploy target..."
 echo "=========================================="
 
 # Default: deploy to Blue
@@ -60,14 +60,14 @@ echo "✓ Target determined"
 
 echo ""
 echo "=========================================="
-echo "[STEP 4/7] Setting up network..."
+echo "[STEP 4/8] Setting up network..."
 echo "=========================================="
 docker network inspect shared-elastic >/dev/null 2>&1 || docker network create shared-elastic
 echo "✓ Network ready"
 
 echo ""
 echo "=========================================="
-echo "[STEP 5/7] Deploying container..."
+echo "[STEP 5/8] Deploying container..."
 echo "=========================================="
 echo "Removing old container if exists..."
 docker rm -f "$DEPLOY_CONTAINER" || true
@@ -88,7 +88,7 @@ echo "✓ Container deployed"
 
 echo ""
 echo "=========================================="
-echo "[STEP 6/7] Health check..."
+echo "[STEP 6/8] Health check..."
 echo "=========================================="
 MAX_RETRIES=30
 RETRY_INTERVAL=2
@@ -115,7 +115,7 @@ fi
 
 echo ""
 echo "=========================================="
-echo "[STEP 7/7] Switching Nginx upstream..."
+echo "[STEP 7/8] Switching Nginx upstream..."
 echo "=========================================="
 echo "Copying upstream config..."
 sudo cp $DEPLOY_PATH/nginx/upstream-$DEPLOY_TARGET.conf /etc/nginx/includes/savvyers-upstream.conf

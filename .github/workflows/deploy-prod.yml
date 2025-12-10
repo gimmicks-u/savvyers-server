@@ -56,13 +56,6 @@ jobs:
           docker --version
           docker compose version
 
-      - name: Prepare env file for build (from secrets)
-        run: |
-          mkdir -p env
-          cat << 'EOF' > env/.env.prod
-          ${{ secrets.ENV_PROD }}
-          EOF
-
       - name: Build Docker image via compose (no cache)
         run: |
           docker compose -f docker/prod/docker-compose.yml build --no-cache savvyers-server-prod

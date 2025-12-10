@@ -5,17 +5,3 @@ services:
     build:
       context: ../../
       dockerfile: docker/prod/dockerfile
-    container_name: savvyers-server-prod
-    ports:
-      - 5201:8080
-    env_file:
-      - ../../env/.env.prod
-    networks:
-      - default
-      - shared-elastic
-    restart: unless-stopped
-
-networks:
-  shared-elastic:
-    external: true
-    name: shared-elastic

@@ -50,6 +50,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if deploy script changed
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            deploy-script:
+              - 'docker/prod/deploy-prod.sh'
 
       - name: Verify Docker versions
         run: |
@@ -90,6 +100,18 @@ jobs:
           source: './savvyers-server-prod-image.tar'
           target: '${{ env.DEPLOY_PATH }}'
 
+      - name: Upload deploy script to server
+        if: steps.changes.outputs.deploy-script == 'true'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: './docker/prod/deploy-prod.sh'
+          target: '${{ env.DEPLOY_PATH }}'
+          strip_components: 2
+
       - name: Create/Update env file on server (from secrets), Blue/Green Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -107,4 +129,5 @@ jobs:
             echo "Starting Blue/Green Deploy"
             echo "=========================================="
             cd ${{ env.DEPLOY_PATH }}
+            chmod +x ./deploy-prod.sh
             ./deploy-prod.sh "${{ steps.meta.outputs.tag }}"

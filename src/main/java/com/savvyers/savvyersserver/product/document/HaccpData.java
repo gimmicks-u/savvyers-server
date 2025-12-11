@@ -27,6 +27,15 @@ public class HaccpData {
     @Field(type = FieldType.Text, index = false)
     private String imgurl2;
 
+    // TODO: Haccp 이미지 URL 문제 해결 후 제거 필요
+    public String getImgurl1() {
+        return null;
+    }
+
+    public String getImgurl2() {
+        return null;
+    }
+
     @Field(type = FieldType.Text)
     private String manufacture;
 

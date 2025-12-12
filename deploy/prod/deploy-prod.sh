@@ -118,7 +118,7 @@ echo "=========================================="
 echo "[STEP 7/8] Switching Nginx upstream..."
 echo "=========================================="
 echo "Copying upstream config..."
-sudo cp $DEPLOY_PATH/nginx/upstream-$DEPLOY_TARGET.conf /etc/nginx/includes/savvyers-upstream.conf
+sudo cp $DEPLOY_PATH/nginx/upstream-$DEPLOY_TARGET.conf /etc/nginx/includes/savvyers-server-upstream.conf
 echo "✓ Config copied"
 
 echo "Testing nginx config..."

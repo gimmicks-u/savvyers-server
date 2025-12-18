@@ -1,153 +1,187 @@
-# Savvyers Server
+## 프로젝트 개요
 
-한국 가공식품 영양정보 비교 서비스 **Savvyers**의 백엔드 API 서버입니다.
+온라인 쇼핑 환경에서 가공식품의 영양 정보를 손쉽게 비교하여 건강한 식품 선택을 돕는 웹 서비스입니다. 사용자가 겪는 '여러 탭을 오가며 영양정보를 수기로 비교하는 불편함'을 해결하는 데 집중하였습니다.
 
-식품의약품안전처에서 제공하는 가공식품 영양성분 데이터를 기반으로, 사용자가 식품의 영양정보를 쉽게 검색하고 비교할 수 있는 REST API를 제공합니다.
+원하는 가공식품을 검색하고, 최대 4개 제품의 영양성분을 레이더 차트, 상세 표를 통해 한눈에 시각적으로 비교할 수 있습니다. 현재 MVP 단계로, 가공식품 검색 및 영양정보 비교 기능을 중심으로 구현되었습니다.
 
-### LIVE
+기획부터 디자인, 프론트엔드, 백엔드 개발, 배포 및 운영까지 전 과정을 **1인으로 수행한 개인 프로젝트**입니다. 요구사항 정의, UX 설계, API 구현, 인프라 구성과 운영까지 서비스를 처음부터 끝까지 구축하는 경험을 목표로 진행했습니다.
 
-- https://savvyers.net
-- https://api.savvyers.net (API)
+## 링크
 
-### 주요 기능
+- **서비스 URL**: [https://savvyers.net](https://savvyers.net/)
+- **API 서버**: [https://api.savvyers.net](https://api.savvyers.net/)
+- **GitHub**
+  - Frontend: https://github.com/gimmicks-u/savvyers-client
+  - Backend: https://github.com/gimmicks-u/savvyers-server
 
-- 가공식품 영양정보 검색 (Elasticsearch 기반 고속 검색)
-- 상품별 상세 영양성분 조회
+## 기술 스택(BE)
 
-## 기술 스택
+### Backend
 
-- **Java** 17
-- **Spring Boot** 3.5.5
+- Language: Java 17
+- Framework: Spring Boot 3.5.5
+- Build Tool: Gradle
+- Search Engine: Elasticsearch
+- API Documentation: SpringDoc OpenAPI (Swagger)
+- Validation: Jakarta Bean Validation
+- Test: JUnit 5
 
-### 주요 의존성
+### Infrastructure
 
-- **Spring Web MVC** - REST API 개발
-- **Spring Data Elasticsearch** - Elasticsearch 연동
-- **Spring Data JPA** - 데이터 영속성 (MySQL)
-- **SpringDoc OpenAPI** - Swagger API 문서화 (`/swagger-ui.html`)
-- **Lombok** - 보일러플레이트 코드 감소
-- **Bean Validation** - 입력값 검증
+- Server: Ubuntu 24 홈서버 (Mini PC)
+- Container: Docker
+- Reverse Proxy: Nginx
+- SSL/TLS: Let's Encrypt (Certbot)
+- DNS/CDN: Cloudflare
+- CI/CD: GitHub Actions
+
+## 주요 기능 및 API 설계
+
+### **검색 최적화 전략**
+
+Elasticsearch를 활용한 고성능 검색 기능을 구현하였습니다.
+
+- Nori 형태소 분석기를 통한 한국어 자연어 처리
+- N-gram 인덱싱을 통한 부분 일치 검색 지원
+- Cross-fields 쿼리를 통한 다중 필드 통합 검색
+- 제품명(food_nm)에 가중치 부여를 통한 검색 정확도 향상
+
+### 데이터
+
+영양 정보 데이터는 한국 식품 데이터를 사용했습니다.
 
 ## 프로젝트 구조
 
 ```
-src/main/java/com/savvyers/savvyersserver/
-├── SavvyersServerApplication.java    # 메인 애플리케이션
-├── config/
-│   ├── CorsConfig.java               # CORS 설정
-│   └── ElasticsearchConfig.java      # Elasticsearch 설정
-├── health/
-│   └── HealthController.java         # 헬스체크 엔드포인트
-└── product/
-    ├── controller/
-    │   └── ProductController.java    # 상품 API 컨트롤러
-    ├── document/
-    │   ├── HaccpData.java            # HACCP 데이터 문서
-    │   └── ProductDocument.java      # 상품 Elasticsearch 문서
-    ├── dto/
-    │   └── request/
-    │       ├── ProductIdRequest.java
-    │       └── ProductSearchRequest.java
-    ├── repository/
-    │   └── ProductRepository.java    # Elasticsearch 레포지토리
-    └── service/
-        └── ProductService.java       # 비즈니스 로직
+savvyers-server/
+├── src/main/java/com/savvyers/savvyersserver/
+│   ├── SavvyersServerApplication.java
+│   ├── config/
+│   │   ├── CorsConfig.java
+│   │   └── ElasticsearchConfig.java
+│   ├── health/
+│   │   └── HealthController.java
+│   └── product/
+│       ├── controller/ProductController.java
+│       ├── service/ProductService.java
+│       ├── repository/ProductRepository.java
+│       ├── document/
+│       │   ├── ProductDocument.java
+│       │   └── HaccpData.java
+│       └── dto/
+│           └── request/
+├── deploy/
+│   ├── prod/
+│   │   ├── docker-compose.yml
+│   │   ├── dockerfile
+│   │   ├── deploy-prod.sh
+│   │   └── nginx/
+│   │       ├── upstream-blue.conf
+│   │       └── upstream-green.conf
+│   ├── dev/
+│   └── local/
+└── .github/workflows/
+    ├── deploy-prod.yml
+    └── deploy-dev.yml
 ```
 
-## 테스트
-
-```bash
-# 전체 테스트 실행
-./gradlew test
-
-# 테스트 리포트 확인
-open build/reports/tests/test/index.html
-```
-
-## 빌드
-
-```bash
-# JAR 파일 빌드
-./gradlew build
-
-# 빌드 결과물
-build/libs/savvyers-server-0.0.1-SNAPSHOT.jar
-```
-
-## 아키텍처
-
-### 애플리케이션 아키텍처
+## 시스템 아키텍처
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                          Client                                 │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     Controller Layer                            │
-│                    (REST Endpoints)                             │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Service Layer                              │
-│                    (Business Logic)                             │
-│                     ProductService                              │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     Repository Layer                            │
-│                      (Data Access)                              │
-│                    ProductRepository                            │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       Elasticsearch                             │
-│                  (가공식품 영양정보 저장소)                           │
-└─────────────────────────────────────────────────────────────────┘
+                                    [Cloudflare]
+                                         |
+                                    [HTTPS/SSL]
+                                    (Let's Encrypt)
+                                         |
+                                      [Nginx]
+                                   (Reverse Proxy)
+                                         |
+                          +--------------+--------------+
+                          |                             |
+                    [Blue Container]            [Green Container]
+                     (Port 5201)                  (Port 5202)
+                          |                             |
+                          +--------------+--------------+
+                                         |
+                                  [Elasticsearch]
+                                   (shared-elastic)
 ```
 
-### 배포 아키텍처
+### 아키텍처 특징
+
+1. **홈서버 기반 인프라 구축**
+   - 미니 PC를 활용한 자체 서버 환경 구성
+   - Docker 컨테이너를 통한 애플리케이션 격리 및 관리
+   - 비용 효율적인 개인 프로젝트 운영 환경 구현
+2. **네트워크 및 보안**
+   - Cloudflare를 통한 DNS 관리 및 DDoS 방어
+   - Let's Encrypt(Certbot)를 활용한 무료 SSL 인증서 자동 갱신
+
+---
+
+## 무중단 배포 (Blue/Green Deployment)
+
+서비스 가용성을 보장하기 위해 Blue/Green 배포 전략을 사용했습니다.
+
+### 배포 프로세스
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         GitHub Actions                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
-│   │    Test      │───▶│    Build     │───▶│   Deploy     │      │
-│   │  (JUnit 5)   │    │ (Docker)     │    │              │      │
-│   └──────────────┘    └──────────────┘    └──────────────┘      │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        Production Server                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌────────────┐     ┌─────────────────────────────────────┐    │
-│   │            │     │         Docker Containers           │    │
-│   │   Nginx    │────▶│  ┌─────────┐      ┌─────────┐       │    │
-│   │            │     │  │  Blue   │  OR  │  Green  │       │    │
-│   │  (Reverse  │     │  │ :5201   │      │ :5202   │       │    │
-│   │   Proxy)   │     │  └─────────┘      └─────────┘       │    │
-│   │            │     │                                     │    │
-│   └────────────┘     └─────────────────────────────────────┘    │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+1. Docker 이미지 빌드 (GitHub Actions)
+     |
+2. 이미지 tarball 생성 및 서버 전송
+     |
+3. 현재 활성 컨테이너 확인
+     |
+     +-- Blue 활성 --> Green에 배포
+     |
+     +-- Green 활성 --> Blue에 배포
+     |
+4. 신규 컨테이너 기동
+     |
+5. Health Check (최대 30회 재시도)
+     |
+6. Nginx upstream 설정 교체
+     |
+7. Nginx 설정 검증 및 reload
+     |
+8. 기존 컨테이너 종료
 ```
 
-### 환경별 배포
+## CI/CD 파이프라인
 
-#### Production: 무중단 배포 (Zero-downtime Deployment)
+GitHub Actions를 활용하여 테스트부터 배포까지 자동화된 파이프라인을 구축하였습니다.
 
-**Blue/Green 배포 방식**으로 무중단 배포를 수행합니다.
+### 파이프라인 구성
 
-1. **새 버전 배포** - 비활성 컨테이너(Green)에 새 버전 배포
-2. **Health Check** - `/health` 엔드포인트로 정상 동작 확인
-3. **트래픽 전환** - Nginx upstream 설정 변경 후 reload
-4. **정리** - 이전 컨테이너(Blue) 제거
+```yaml
+name: Deploy Prod (Blue/Green)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    # JDK 17 환경에서 Gradle 테스트 실행
+    # 테스트 결과 아티팩트 업로드
+
+  deploy:
+    needs: test
+    # Docker 이미지 빌드
+    # 서버로 이미지 전송
+    # Blue/Green 배포 스크립트 실행
+```
+
+### 주요 기능
+
+1. **자동 테스트**
+   - main 브랜치 push 시 자동 테스트 실행
+   - 테스트 실패 시 배포 중단
+   - 테스트 결과 리포트 아티팩트 저장
+2. **보안 관리**
+   - GitHub Secrets를 통한 민감 정보 관리
+   - SSH 키 기반 서버 접근
+   - 환경 변수 파일 동적 생성
+3. **배포 최적화**
+   - 배포 스크립트 변경 감지 시에만 스크립트 재전송
+   - Docker 이미지 캐시 비활성화를 통한 일관된 빌드
